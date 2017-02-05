@@ -6,23 +6,161 @@
 			h1,h2 {
 				font-family: "Coustard",Georgia,serif;
 			}
+			h2 {
+				line-height: 70%;
+			}
 			h1 i {
 				font-weight: normal;
 				font-size: 0.8em;
 			}
 			h3 {
-				font-family: "Nunito",/*"Arial Rounded MT Bold",*/Helvetica,sans-serif;
+				font-family: "Nunito",Helvetica,Arial,sans-serif;
+				line-height: 30%;
 			}
 			body {
 				font-family: "Nunito",Helvetica,Arial,sans-serif;
 				font-size: 1.2em;
+				background-color: #fff7f0;
 			}
-			#rsvp {
-				font-size: 1.4em;
+			#flags {
+				margin: 0 auto;
 			}
 		</style>
+		<script>
+			/*
+			TODO
+			X fonts
+			X spacing
+			- registry
+			X more colorful header
+			X interactive flags
+			X phone test
+			*/
+
+			var canvas,ctx;
+
+			// drawing
+			var stringDist = 10;
+			var stringDip = 50;
+			var flagWidth = 40;
+			var flagHeight = 65;
+			var flagDrop = 5;
+			var flagDist = 12;
+
+			var red = "#ff5050";
+			var turquoise = "#85e0e0";
+
+			// time
+			var startTime,elapsedTime;
+			var prevTime,curTime,dt;
+
+			// interaction
+			var prevMouseX = 0;
+			var mouseX = 0;
+			var mouseXSpeed = 0;
+			var windSpeed = 0;
+			var windFallOffDistance = 250;
+
+			function start() {
+				console.log("hi?");
+
+				canvas = document.getElementById("flags");
+				canvas.height = stringDip + flagDrop + flagHeight + 10;
+				canvas.width = window.innerWidth;
+
+				ctx = canvas.getContext("2d");
+
+				startTime = Date.now();
+				prevTime = startTime;
+				setInterval( update, -1 );
+
+				window.onresize = function() {
+					canvas.width = window.innerWidth;
+				}
+
+				window.onmousemove = function(e) {
+					//if (e.clientY < canvas.height) {
+						mouseX = e.clientX;
+					//}
+				}
+			}
+
+			function update() {
+				curTime = Date.now();
+				dt = curTime - prevTime;
+				elapsedTime = curTime - startTime;
+
+				mouseXSpeed = (mouseX - prevMouseX) / dt;
+				windSpeed += mouseXSpeed * 5;
+				windSpeed -= windSpeed * 0.01;
+
+				drawFlags();
+
+				prevMouseX = mouseX;
+				prevTime = curTime;
+			}
+
+			function drawFlags() {
+				ctx.clearRect( 0, 0, canvas.width, canvas.height );
+
+				// draw string
+				ctx.strokeStyle = "#000";
+				ctx.beginPath();
+				ctx.moveTo(0,stringY(0));
+				var x = stringDist;
+				var y = 0;
+				while (x <= canvas.width) {
+					y = stringY( x );
+					ctx.lineTo( x, y );
+
+					x += stringDist;
+				}
+				ctx.stroke();
+
+				// draw flags
+				ctx.fillStyle = red;
+				var flagX = 0;
+				while ( flagX + flagDist <= canvas.width ) {
+					var flagXRight = flagX + flagWidth;
+					var flagXMid = flagX + (flagWidth*0.5);
+					var flagYLeft = stringY( flagX );
+					var flagYRight = stringY( flagX + flagWidth );
+
+					ctx.beginPath();
+					ctx.moveTo( flagX, flagYLeft + flagDrop );
+					ctx.lineTo( flagXRight, flagYRight + flagDrop );
+					ctx.lineTo( flagXRight + touchDisturbance( flagXMid ), flagYRight + flagDrop + flagHeight );
+					ctx.lineTo( flagX + touchDisturbance( flagXMid ), flagYLeft + flagDrop + flagHeight );
+					ctx.fill();
+
+					flagX += flagWidth + flagDist;
+					if ( ctx.fillStyle === red ) {
+						ctx.fillStyle = turquoise;
+					}
+					else {
+						ctx.fillStyle = red;
+					}
+				}
+
+			}
+
+			function touchDisturbance(x) {
+				return (windSpeed/10) * Math.max( 0, (1 - (Math.abs(mouseX-x) / windFallOffDistance) ) );
+			}
+
+			function stringY(x) {
+				return (Math.sin( (x / canvas.width) * Math.PI ) * stringDip) + turbulence( x );
+			}
+
+			function turbulence(x) {
+				return (Math.sin( (x/(canvas.width*0.3)) + elapsedTime/600 ) * 3) 
+						+ (Math.cos( (x/(canvas.width*0.1)) + elapsedTime/300 ) * 1);
+			}
+
+		</script>
 	</head>
 	<body>
+		<canvas id="flags"></canvas>
 
 		<div style="width:90%; margin: 0 auto; max-width: 600px;">
 			
@@ -38,38 +176,41 @@
 				Come join us for food, games, and fun as we celebrate our wedding. We hope to see you there!
 			</p>
 
-			<p>
-				<span id="rsvp">
-				Please <a href="https://docs.google.com/forms/d/e/1FAIpQLSdl_t1SLHUaq2FWSX6aQ11j7oKB_kRPgUpol-jBEzxEHYCkHw/viewform">R.S.V.P.</a>
-				</span>
-			</p>
-
 			<h3>
 			Please <a href="https://docs.google.com/forms/d/e/1FAIpQLSdl_t1SLHUaq2FWSX6aQ11j7oKB_kRPgUpol-jBEzxEHYCkHw/viewform">R.S.V.P.</a>
 			</h3>
 
+
+
+			<br>
+
 			<h2>What you need to know</h2>
+			Here are the basics:
 			<ul>
 				<li><b>When?</b> <a href="https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=M3FwZjk0bmg1a290YWszNnE2Zm9tMHVwajAgYWRhbXJvc3NsZWRvdXhAbQ&tmsrc=adamrossledoux%40gmail.com">September 17, 2017</a></li>
 				<li><b>Where?</b> <a href="https://www.google.com/maps/place/The+Trolley+Barn/@33.7562906,-84.358361,17z/data=!3m1!4b1!4m5!3m4!1s0x88f503ff905e1bed:0xc1626dc0cd684569!8m2!3d33.7562906!4d-84.3561723">The Trolley Barn</a> in Atlanta, GA</li>
 			</ul>
 
+
+
+			<br>
+
 			<h2>More details</h2>
 			
-			<p>
-				Map:<br/>
-				<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3317.1693058172373!2d-84.35836098479268!3d33.75629058068764!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88f503ff905e1bed%3A0xc1626dc0cd684569!2sThe+Trolley+Barn!5e0!3m2!1sen!2sus!4v1478394794693" width="400" height="400" frameborder="0" style="border:0" allowfullscreen></iframe>
-			</p>
-			
-			<p>
-				Calendar:<br/>
-				<iframe src="https://calendar.google.com/calendar/embed?title=Wedding%20Date&amp;showTitle=0&amp;showNav=0&amp;showPrint=0&amp;showTabs=0&amp;showCalendars=0&amp;showTz=0&amp;height=400&amp;wkst=1&amp;bgcolor=%23ffffff&amp;src=33ec23k25ckcfuts4s2241vcog%40group.calendar.google.com&amp;color=%2323164E&amp;ctz=America%2FLos_Angeles&amp;dates=20170901%2F20170930" style="border-width:0" width="400" height="400" frameborder="0" scrolling="no"></iframe>
-			</p>
+			<h3>Map</h3>
+			<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3317.1693058172373!2d-84.35836098479268!3d33.75629058068764!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88f503ff905e1bed%3A0xc1626dc0cd684569!2sThe+Trolley+Barn!5e0!3m2!1sen!2sus!4v1478394794693" width="600" height="400" frameborder="0" style="border:0" allowfullscreen></iframe>
+			<br><br>
+
+			<h3>Calendar</h3>
+			<iframe src="https://calendar.google.com/calendar/embed?title=Wedding%20Date&amp;showTitle=0&amp;showNav=0&amp;showPrint=0&amp;showTabs=0&amp;showCalendars=0&amp;showTz=0&amp;height=400&amp;wkst=1&amp;bgcolor=%23ffffff&amp;src=33ec23k25ckcfuts4s2241vcog%40group.calendar.google.com&amp;color=%2323164E&amp;ctz=America%2FLos_Angeles&amp;dates=20170901%2F20170930" style="border-width:0" width="600" height="400" frameborder="0" scrolling="no"></iframe>
+
+			<br><br>
 
 			<h3>Registry</h3>
 			<p>
-				tbd
+				We're going to have an optional charity donation registry. Watch this space for more information!
 			</p>
+			<br>
 
 			<h3>Invitation</h3>
 			<img src="invite.jpg" width="100%"/>
@@ -78,8 +219,11 @@
 	<script>
 		//Load fancy font after page finishes loading
 		document.body.onload = function() {
+			start();
+			console.log("Hi?");
 			var url = 'https://fonts.googleapis.com/css?family=Nunito|Coustard';
 			loadFont(url);
+			console.log("hello?");
 		}
 
 		function loadFont(url) {
