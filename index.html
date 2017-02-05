@@ -79,9 +79,7 @@
 				}
 
 				window.onmousemove = function(e) {
-					//if (e.clientY < canvas.height) {
-						mouseX = e.clientX;
-					//}
+					mouseX = e.clientX;
 				}
 			}
 
@@ -90,9 +88,11 @@
 				dt = curTime - prevTime;
 				elapsedTime = curTime - startTime;
 
-				mouseXSpeed = (mouseX - prevMouseX) / dt;
+				if (dt != 0) mouseXSpeed = (mouseX - prevMouseX) / dt;
 				windSpeed += mouseXSpeed * 5;
 				windSpeed -= windSpeed * 0.01;
+				if ( isNaN(mouseXSpeed) ) mouseXSpeed = 0;
+				if ( isNaN(windSpeed) ) windSpeed = 0;
 
 				drawFlags();
 
